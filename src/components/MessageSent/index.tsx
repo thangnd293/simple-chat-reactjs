@@ -7,7 +7,7 @@ import MessageContent from '../MessageContent';
 const MessageSent = () => {
     return (
         <div className="message-wrapper sent">
-            <MessageContent type={'image'} />
+            <MessageContent type={'text'} />
             {/* <Avatar size="tiny" /> */}
             {/* <SentIcon className="w-4 h-4" /> */}
             <ReceivedIcon className="sent-status w-4 h-4" />

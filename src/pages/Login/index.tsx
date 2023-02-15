@@ -1,17 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 
 import Input from '@/components/Input';
-import { useLogin } from '@/services/use-login';
-import { User } from '@/types/user';
+import { Response, useLogin } from '@/services/use-login';
 
 const Login = () => {
     const navigate = useNavigate();
-
     const { mutate: login } = useLogin();
 
-    const redirectToChatPage = (data: User | undefined) => {
-        localStorage.setItem('token', JSON.stringify(data));
-        navigate('/chat');
+    const redirectToChatPage = (data: Response) => {
+        const { access_token } = data;
+
+        if (access_token) {
+            localStorage.setItem('token', `${access_token}`);
+            navigate('/chat');
+        }
     };
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {

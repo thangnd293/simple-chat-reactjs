@@ -1,5 +1,4 @@
 import http from '@/common/http';
-import { User } from '@/types/user';
 import { useMutation } from '@tanstack/react-query';
 
 type Input = {
@@ -7,8 +6,12 @@ type Input = {
     password: string;
 };
 
+export type Response = {
+    access_token: string;
+};
+
 function login(input: Input) {
-    return http.post<User>('/users/login', input).then((res) => res.data);
+    return http.post<Response>('/auth/login', input).then((res) => res.data);
 }
 
 export function useLogin() {
