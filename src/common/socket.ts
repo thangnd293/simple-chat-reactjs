@@ -9,7 +9,7 @@ export class SocketSingleton {
         this.socket = io('http://localhost:3001', {
             auth: { token },
         });
-        
+
         this.socket.on('connect', () => {
             console.log('Connected to server:', this.socket.id);
         });

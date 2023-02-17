@@ -1,20 +1,22 @@
 import classNames from 'classnames';
 
-type Type = 'text' | 'image';
+import { MessageType } from '@/types/common';
+import { Message } from '@/types/message';
 
 interface Props {
-    type: Type;
+    message: Message;
 }
 
-const styles: Record<Type, string> = {
+const styles: Record<MessageType, string> = {
     text: 'p-2.5 bg-blue-500 text-white',
     image: 'bg-red-500 text-white',
 };
 
-const MessageContent = ({ type }: Props) => {
+const MessageContent = ({ message }: Props) => {
+    const { type, content } = message;
     const classes = classNames('message', styles[type]);
 
-    return <div className={classes}>Message</div>;
+    return <div className={classes}>{content}</div>;
 };
 
 export default MessageContent;
