@@ -1,6 +1,7 @@
 import classNames from 'classnames';
+import { SVGProps } from 'react';
 
-const ReceivedIcon = ({ className, ...props }: React.ComponentProps<'svg'>) => {
+const ReceivedIcon = ({ className, ...props }: SVGProps<SVGSVGElement>) => {
     const classes = classNames('sent-status', className);
     return (
         <svg

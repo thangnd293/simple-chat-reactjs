@@ -90,7 +90,7 @@
 }
 
 /* Default send status */
-.message-wrapper.sent > .sent-status {
+/* .message-wrapper.sent > .sent-status {
     opacity: 0;
     visibility: hidden;
-}
+} */

@@ -1,6 +1,7 @@
 import classNames from 'classnames';
+import { SVGProps } from 'react';
 
-const SentIcon = ({ className, ...props }: React.ComponentProps<'svg'>) => {
+const SentIcon = ({ className, ...props }: SVGProps<SVGSVGElement>) => {
     const classes = classNames('sent-status', className);
 
     return (

@@ -1,4 +1,4 @@
-import { MessageType } from './common';
+import { MessageStatus, MessageType } from './common';
 import { User } from './user';
 
 export type Message = {
@@ -6,5 +6,5 @@ export type Message = {
     type: MessageType;
     content: string;
     sender: User;
-    receiver: User;
+    status: MessageStatus;
 };
