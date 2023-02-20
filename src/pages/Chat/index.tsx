@@ -11,8 +11,11 @@ import { useMessages } from '@/services/use-messages';
 import { useRevalidateMessages } from '@/services/use-revalidate-messages';
 import { MessageStatus, MessageType } from '@/types/common';
 import { Message } from '@/types/message';
+import { User } from '@/types/user';
+import { reverseArray } from '@/utils/function';
 
 const Chat = () => {
+    const focusRef = useRef(true);
     const [isShowScrollDown, setIsShowScrollDown] = useState(false);
     const { user, setUser } = useGlobalContext();
 
@@ -35,12 +38,12 @@ const Chat = () => {
     useEffect(() => {
         socket.on('send-message', revalidateMessages);
         socket.on('new-message', revalidateMessages);
-        socket.on('read-message', revalidateMessages);
+        // socket.on('read-message', revalidateMessages);
 
         return () => {
             socket.off('send-message');
             socket.off('new-message');
-            socket.off('read-message');
+            // socket.off('read-message');
         };
     }, []);
 
@@ -50,16 +53,71 @@ const Chat = () => {
             if (!chatContainerElement) return;
 
             const { scrollHeight } = chatContainerElement;
+
             chatContainerElement.style.scrollBehavior = scrollBehavior;
             chatContainerElement.scrollTop = scrollHeight;
         },
-        [],
+        [currentMessages],
     );
+
+    const handleUpdateReadMessageStatus = useCallback(() => {
+        if (isShowScrollDown) return;
+        if (!focusRef.current) return;
+
+        const chatContainerElement = chatContainerRef.current;
+        if (
+            !chatContainerElement ||
+            !currentMessages ||
+            currentMessages.length === 0 ||
+            !user
+        )
+            return;
+
+        const isSeenAll = checkIsSeenAll(
+            chatContainerElement,
+            currentMessages,
+            user,
+        );
+
+        if (!isSeenAll) {
+            socket.emit('read-message', {
+                conversationId: '63ef22182e525bb72708a29e',
+            });
+        }
+    }, [currentMessages, user, isShowScrollDown]);
+
+    console.log('currentMessages', currentMessages);
 
     useEffect(() => {
         if (isShowScrollDown) return;
+
         handleScrollToBottom();
-    }, [handleScrollToBottom, currentMessages, isShowScrollDown]);
+    }, [handleScrollToBottom, isShowScrollDown]);
+
+    useEffect(() => {
+        handleUpdateReadMessageStatus();
+    }, [handleUpdateReadMessageStatus]);
+
+    useEffect(() => {
+        const handleFocus = () => {
+            document.title = 'Chat App';
+            focusRef.current = true;
+            handleUpdateReadMessageStatus();
+        };
+
+        const handleBlur = () => {
+            document.title = 'Chat App (Đang ẩn)';
+            focusRef.current = false;
+        };
+        window.addEventListener('focus', handleFocus);
+
+        window.addEventListener('blur', handleBlur);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('blur', handleBlur);
+        };
+    }, [handleUpdateReadMessageStatus]);
 
     const sendMessage = (type: MessageType, content: string) => {
         socket.emit('send-message', {
@@ -73,7 +131,7 @@ const Chat = () => {
         e.preventDefault();
 
         const input = e.currentTarget.querySelector('input');
-        if (!input) return;
+        if (!input || !input.value.trim()) return;
 
         sendMessage(MessageType.Text, input.value);
 
@@ -94,20 +152,11 @@ const Chat = () => {
         navigate('/auth/login');
     };
 
-    console.log('messages', messages);
-
     const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
 
-        if (scrollTop + clientHeight === scrollHeight) {
-            // the element has been scrolled to the bottom
-
-            socket.emit('read-message', {
-                conversationId: '63ef22182e525bb72708a29e',
-            });
-        }
-
         setIsShowScrollDown(scrollHeight - (clientHeight + scrollTop) > 100);
+        handleUpdateReadMessageStatus();
     };
 
     return (
@@ -160,3 +209,21 @@ const Chat = () => {
 };
 
 export default Chat;
+
+function checkIsSeenAll(
+    container: HTMLDivElement,
+    messages: Message[],
+    sender: User,
+) {
+    const { scrollTop, scrollHeight, clientHeight } = container;
+
+    const lastMessageReceived = reverseArray(messages).find(
+        (message) => message.sender._id !== sender._id,
+    );
+
+    const isScrollToBottom = scrollTop + clientHeight === scrollHeight;
+    const isLastMessageSeen =
+        lastMessageReceived?.status === MessageStatus.Seen;
+
+    return isScrollToBottom && isLastMessageSeen;
+}
