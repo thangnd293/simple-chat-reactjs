@@ -10,5 +10,6 @@ export function useUserInfo() {
     return useQuery({
         queryKey: ['me'],
         queryFn: getUserInfo,
+        staleTime: 60 * 1000,
     });
 }

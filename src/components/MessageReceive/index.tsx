@@ -2,11 +2,9 @@ import { Message } from '@/types/message';
 
 import Avatar from '../Avatar';
 import MessageContent from '../MessageContent';
+import { MessageProps } from '../MessageSent';
 
-interface Props {
-    message: Message;
-}
-const MessageReceive = ({ message }: Props) => {
+const MessageReceive = ({ message }: MessageProps) => {
     return (
         <div className="message-wrapper receive gap-1">
             <Avatar />

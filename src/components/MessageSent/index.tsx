@@ -7,16 +7,17 @@ import { Message } from '@/types/message';
 import Avatar from '../Avatar';
 import MessageContent from '../MessageContent';
 
-interface Props {
+export interface MessageProps {
     message: Message;
+    isLastMessageSeen?: boolean;
 }
-const MessageSent = ({ message }: Props) => {
+const MessageSent = ({ message, isLastMessageSeen }: MessageProps) => {
     const { status } = message;
-
+    const showBadge = status !== MessageStatus.Seen || isLastMessageSeen;
     return (
         <div className="message-wrapper sent">
             <MessageContent message={message} />
-            {renderBadge(status)}
+            {showBadge ? renderBadge(status) : <div className="w-4" />}
         </div>
     );
 };

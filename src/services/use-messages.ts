@@ -12,5 +12,7 @@ export function useMessages() {
     return useQuery({
         queryKey: ['messages'],
         queryFn: getMessages,
+        staleTime: Infinity,
+        cacheTime: Infinity,
     });
 }

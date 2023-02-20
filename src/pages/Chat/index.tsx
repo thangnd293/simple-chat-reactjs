@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FiArrowDown } from 'react-icons/fi';
 import { IoIosSend } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
@@ -36,14 +36,12 @@ const Chat = () => {
     }, [messages]);
 
     useEffect(() => {
-        socket.on('send-message', revalidateMessages);
         socket.on('new-message', revalidateMessages);
-        // socket.on('read-message', revalidateMessages);
+        socket.on('read-message', revalidateMessages);
 
         return () => {
-            socket.off('send-message');
             socket.off('new-message');
-            // socket.off('read-message');
+            socket.off('read-message');
         };
     }, []);
 
@@ -79,13 +77,14 @@ const Chat = () => {
             user,
         );
 
+        console.log('isSeenAll', isSeenAll);
+
         if (!isSeenAll) {
             socket.emit('read-message', {
                 conversationId: '63ef22182e525bb72708a29e',
             });
         }
     }, [currentMessages, user, isShowScrollDown]);
-
     console.log('currentMessages', currentMessages);
 
     useEffect(() => {
@@ -159,6 +158,18 @@ const Chat = () => {
         handleUpdateReadMessageStatus();
     };
 
+    const lastMessageSeen = useMemo(() => {
+        if (!currentMessages) return null;
+
+        return reverseArray(currentMessages).find(
+            (message) =>
+                message.sender._id === user?._id &&
+                message.status === MessageStatus.Seen,
+        );
+    }, [currentMessages]);
+
+    console.log('lastMessageSeen', lastMessageSeen);
+
     return (
         <div className="w-full h-screen flex flex-col bg-slate-300">
             <div className="h-14 flex justify-between bg-green-50">
@@ -173,8 +184,16 @@ const Chat = () => {
                 <div className="w-full flex flex-col">
                     {currentMessages?.map((message) => {
                         const isSent = user?._id === message.sender._id;
+                        const isLastMessageSeen =
+                            lastMessageSeen?._id === message._id;
                         const Message = isSent ? MessageSent : MessageReceive;
-                        return <Message key={message._id} message={message} />;
+                        return (
+                            <Message
+                                key={message._id}
+                                message={message}
+                                isLastMessageSeen={isLastMessageSeen}
+                            />
+                        );
                     })}
                 </div>
             </div>
@@ -222,8 +241,9 @@ function checkIsSeenAll(
     );
 
     const isScrollToBottom = scrollTop + clientHeight === scrollHeight;
+
     const isLastMessageSeen =
-        lastMessageReceived?.status === MessageStatus.Seen;
+        lastMessageReceived?.status === MessageStatus.Seen ?? true;
 
     return isScrollToBottom && isLastMessageSeen;
 }

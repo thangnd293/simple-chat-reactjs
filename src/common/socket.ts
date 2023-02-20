@@ -6,7 +6,7 @@ export class SocketSingleton {
 
     private constructor() {
         const token = localStorage.getItem('token');
-        this.socket = io('http://localhost:3001', {
+        this.socket = io('http://localhost:3002', {
             auth: { token },
         });
 
