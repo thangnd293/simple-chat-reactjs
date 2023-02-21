@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AiFillVideoCamera } from 'react-icons/ai';
 import { FiArrowDown } from 'react-icons/fi';
 import { IoIosSend } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
@@ -71,12 +72,7 @@ const Chat = () => {
         )
             return;
 
-        const isSeenAll = checkIsSeenAll(
-            chatContainerElement,
-            currentMessages,
-            user,
-        );
-
+        const isSeenAll = checkIsSeenAll(currentMessages, user);
         console.log('isSeenAll', isSeenAll);
 
         if (!isSeenAll) {
@@ -85,7 +81,6 @@ const Chat = () => {
             });
         }
     }, [currentMessages, user, isShowScrollDown]);
-    console.log('currentMessages', currentMessages);
 
     useEffect(() => {
         if (isShowScrollDown) return;
@@ -108,8 +103,8 @@ const Chat = () => {
             document.title = 'Chat App (Đang ẩn)';
             focusRef.current = false;
         };
-        window.addEventListener('focus', handleFocus);
 
+        window.addEventListener('focus', handleFocus);
         window.addEventListener('blur', handleBlur);
 
         return () => {
@@ -168,12 +163,13 @@ const Chat = () => {
         );
     }, [currentMessages]);
 
-    console.log('lastMessageSeen', lastMessageSeen);
-
     return (
         <div className="w-full h-screen flex flex-col bg-slate-300">
             <div className="h-14 flex justify-between bg-green-50">
                 Header {user?.name}
+                <button>
+                    <AiFillVideoCamera />
+                </button>
                 <button onClick={onLogout}>Logout</button>
             </div>
             <div
@@ -229,21 +225,13 @@ const Chat = () => {
 
 export default Chat;
 
-function checkIsSeenAll(
-    container: HTMLDivElement,
-    messages: Message[],
-    sender: User,
-) {
-    const { scrollTop, scrollHeight, clientHeight } = container;
-
+function checkIsSeenAll(messages: Message[], sender: User) {
     const lastMessageReceived = reverseArray(messages).find(
         (message) => message.sender._id !== sender._id,
     );
 
-    const isScrollToBottom = scrollTop + clientHeight === scrollHeight;
-
     const isLastMessageSeen =
         lastMessageReceived?.status === MessageStatus.Seen ?? true;
 
-    return isScrollToBottom && isLastMessageSeen;
+    return isLastMessageSeen;
 }
